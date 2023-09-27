@@ -113,12 +113,32 @@ esp_err_t hx711_set_gain(hx711_t *dev, hx711_gain_t gain)
 {
     CHECK_ARG(dev && gain <= HX711_GAIN_A_64);
 
-    CHECK(hx711_wait(dev, 200)); // 200 ms timeout
+    CHECK(hx711_wait(dev, 10000)); // 10000 ms timeout
 
     read_raw(dev->dout, dev->pd_sck, gain);
     dev->gain = gain;
 
     return ESP_OK;
+}
+
+esp_err_t hx711_set_scale(hx711_t *dev, float scale)
+{
+	dev->scale = scale;
+	return ESP_OK;
+}
+
+esp_err_t hx711_set_offset(hx711_t *dev, int32_t offset)
+{
+	dev->offset = offset;
+	return ESP_OK;
+}
+
+esp_err_t hx711_tare(hx711_t *dev, size_t times)
+{
+	int32_t offset;
+	CHECK(hx711_read_average(dev, times, &offset));
+	hx711_set_offset(dev, offset);
+	return ESP_OK;
 }
 
 esp_err_t hx711_is_ready(hx711_t *dev, bool *ready)
@@ -163,11 +183,30 @@ esp_err_t hx711_read_average(hx711_t *dev, size_t times, int32_t *data)
     *data = 0;
     for (size_t i = 0; i < times; i++)
     {
-        CHECK(hx711_wait(dev, 200));
+        CHECK(hx711_wait(dev, 10000));
         CHECK(hx711_read_data(dev, &v));
         *data += v;
     }
     *data /= (int32_t) times;
 
     return ESP_OK;
+}
+
+esp_err_t hx711_get_value(hx711_t *dev, size_t times, int32_t *data)
+{
+	int32_t reading;
+	CHECK(hx711_read_average(dev, times, &reading));
+	*data = reading - dev->offset;
+	
+	return ESP_OK;
+}
+
+esp_err_t hx711_get_units(hx711_t *dev, size_t times, float *data)
+{
+	int32_t value;
+	hx711_get_value(dev, times, &value);
+	
+	*data = (float) value / dev->scale;
+	
+	return ESP_OK;
 }

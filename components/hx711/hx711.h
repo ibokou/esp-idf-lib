@@ -64,6 +64,8 @@ typedef struct
     gpio_num_t dout;
     gpio_num_t pd_sck;
     hx711_gain_t gain;
+	int32_t offset;
+	float scale;
 } hx711_t;
 
 /**
@@ -93,6 +95,34 @@ esp_err_t hx711_power_down(hx711_t *dev, bool down);
  * @return `ESP_OK` on success, `ESP_ERR_TIMEOUT` if device not found
  */
 esp_err_t hx711_set_gain(hx711_t *dev, hx711_gain_t gain);
+
+/**
+ * @brief Set device gain and channel
+ *
+ * @param dev Device descriptor
+ * @param scale value
+ * @return `ESP_OK` on success, `ESP_ERR_TIMEOUT` if device not found
+ */
+esp_err_t hx711_set_scale(hx711_t *dev, float scale);
+
+
+/**
+ * @brief Set device offset
+ *
+ * @param dev Device descriptor
+ * @param offset value
+ * @return `ESP_OK` on success, `ESP_ERR_TIMEOUT` if device not found
+ */
+esp_err_t hx711_set_offset(hx711_t *dev, int32_t scale);
+
+/**
+ * @brief Set device offset
+ *
+ * @param dev Device descriptor
+ * @param offset value
+ * @return `ESP_OK` on success, `ESP_ERR_TIMEOUT` if device not found
+ */
+esp_err_t hx711_tare(hx711_t *dev, size_t times);
 
 /**
  * @brief Check if device ready to send data
@@ -133,6 +163,26 @@ esp_err_t hx711_read_data(hx711_t *dev, int32_t *data);
  * @return `ESP_OK` on success
  */
 esp_err_t hx711_read_average(hx711_t *dev, size_t times, int32_t *data);
+
+/**
+ * @brief Read average data - offset
+ *
+ * @param dev Device descriptor
+ * @param times Count of samples to read for hx711_read_average call
+ * @param[out] data Average ADC data
+ * @return `ESP_OK` on success
+ */
+esp_err_t hx711_get_value(hx711_t *dev, size_t times, int32_t *data);
+
+/**
+ * @brief Read data as kg/g etc. depending on scale value
+ *
+ * @param dev Device descriptor
+ * @param times Count of samples to read for get_value call
+ * @param[out] data Average ADC data
+ * @return `ESP_OK` on success
+ */
+esp_err_t hx711_get_units(hx711_t *dev, size_t times, float *data);
 
 #ifdef __cplusplus
 }
